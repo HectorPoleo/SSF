@@ -99,7 +99,6 @@ echo "Documentos movidos: $docs"
 echo "TXT movidos: $txts"
 echo "PDFs movidos: $pdfs"
 echo "Elementos vacíos encontrados: $total_vacios"
-echo "--------------------------------"
 
 if [ "$total_vacios" -gt 0 ]; then
     echo ""
