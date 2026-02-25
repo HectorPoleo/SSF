@@ -1,121 +1,132 @@
 #!/bin/bash
 
-# ==============================
-# AGENTE DEL CAOS - kaos.sh
-# Ordena archivos y limpia vacíos
-# ==============================
+# ==========================================
+# AGENTE DEL CAOS - Versión Mejorada
+# Organiza archivos por tipo y limpia vacíos
+# ==========================================
 
-# ---------- FUNCIONES ----------
+# ---------------- FUNCIONES ----------------
 
-crear_directorio() {
-    [ ! -d "$1" ] && mkdir -p "$1"
+crear_directorio_si_no_existe() {
+    ruta_directorio="$1"
+    if [ ! -d "$ruta_directorio" ]; then
+        mkdir -p "$ruta_directorio"
+    fi
 }
 
-mover_archivo() {
-    mv "$1" "$2" 2>/dev/null
+mover_archivo_a_directorio() {
+    ruta_archivo="$1"
+    ruta_directorio_destino="$2"
+    mv "$ruta_archivo" "$ruta_directorio_destino" 2>/dev/null
 }
 
-if [ -z "$1" ]; then
-    DIR=$(pwd)
+# -------------- DIRECTORIO BASE --------------
+
+directorio_parametro="$1"
+
+if [ -z "$directorio_parametro" ]; then
+    directorio_trabajo="$(pwd)"
 else
-    DIR="$1"
+    directorio_trabajo="$directorio_parametro"
 fi
 
-if [ ! -d "$DIR" ]; then
-    echo "Error: El directorio no existe."
+if [ ! -d "$directorio_trabajo" ]; then
+    echo "Error: El directorio indicado no existe."
     exit 1
 fi
 
-cd "$DIR" || exit 1
+cd "$directorio_trabajo" || exit 1
 
-ORDENADO="ORDENADO"
-crear_directorio "$ORDENADO"
+# -------------- ESTRUCTURA DE CARPETAS --------------
 
-IMGS="$ORDENADO/IMGS"
-DOCS="$ORDENADO/DOCS"
-TXTS="$ORDENADO/TXTS"
-PDFS="$ORDENADO/PDFS"
-VACIOS="$ORDENADO/VACIOS"
+nombre_carpeta_principal="ORDENADO"
 
-crear_directorio "$IMGS"
-crear_directorio "$DOCS"
-crear_directorio "$TXTS"
-crear_directorio "$PDFS"
-crear_directorio "$VACIOS"
+ruta_carpeta_principal="$directorio_trabajo/$nombre_carpeta_principal"
+ruta_carpeta_imagenes="$ruta_carpeta_principal/IMGS"
+ruta_carpeta_documentos="$ruta_carpeta_principal/DOCS"
+ruta_carpeta_textos="$ruta_carpeta_principal/TXTS"
+ruta_carpeta_pdfs="$ruta_carpeta_principal/PDFS"
+ruta_carpeta_vacios="$ruta_carpeta_principal/VACIOS"
 
-echo "Ordenando directorio: $DIR"
-echo "--------------------------------"
+crear_directorio_si_no_existe "$ruta_carpeta_imagenes"
+crear_directorio_si_no_existe "$ruta_carpeta_documentos"
+crear_directorio_si_no_existe "$ruta_carpeta_textos"
+crear_directorio_si_no_existe "$ruta_carpeta_pdfs"
+crear_directorio_si_no_existe "$ruta_carpeta_vacios"
 
+echo "Organizando archivos en: $directorio_trabajo"
+echo "--------------------------------------------"
 
-imgs=0
-docs=0
-txts=0
-pdfs=0
-vacios=0
+# -------------- CONTADORES --------------
 
+contador_imagenes_movidas=0
+contador_documentos_movidos=0
+contador_textos_movidos=0
+contador_pdfs_movidos=0
+contador_archivos_vacios_movidos=0
+shopt -s nullglob
 
-for file in *; do
-    [ -f "$file" ] || continue
+# -------------- CLASIFICACIÓN DE ARCHIVOS --------------
 
-    [[ "$file" == "$ORDENADO" ]] && continue
+for ruta_archivo_actual in "$directorio_trabajo"/*; do
 
-    if [ ! -s "$file" ]; then
-        mover_archivo "$file" "$VACIOS/"
-        ((vacios++))
+    if [ ! -f "$ruta_archivo_actual" ]; then
         continue
     fi
 
-    case "$file" in
-        *.jpg|*.png|*.gif)
-            mover_archivo "$file" "$IMGS/"
-            ((imgs++))
+    nombre_archivo_actual="$(basename "$ruta_archivo_actual")"
+
+    if [[ "$ruta_archivo_actual" == "$ruta_carpeta_principal"* ]]; then
+        continue
+    fi
+
+    if [ ! -s "$ruta_archivo_actual" ]; then
+        mover_archivo_a_directorio "$ruta_archivo_actual" "$ruta_carpeta_vacios/"
+        ((contador_archivos_vacios_movidos++))
+        continue
+    fi
+
+    extension_archivo="${nombre_archivo_actual##*.}"
+    extension_archivo_minuscula="${extension_archivo,,}"
+
+    case "$extension_archivo_minuscula" in
+        jpg|png|gif)
+            mover_archivo_a_directorio "$ruta_archivo_actual" "$ruta_carpeta_imagenes/"
+            ((contador_imagenes_movidas++))
             ;;
-        *.docx|*.odt)
-            mover_archivo "$file" "$DOCS/"
-            ((docs++))
+        docx|odt)
+            mover_archivo_a_directorio "$ruta_archivo_actual" "$ruta_carpeta_documentos/"
+            ((contador_documentos_movidos++))
             ;;
-        *.txt)
-            mover_archivo "$file" "$TXTS/"
-            ((txts++))
+        txt)
+            mover_archivo_a_directorio "$ruta_archivo_actual" "$ruta_carpeta_textos/"
+            ((contador_textos_movidos++))
             ;;
-        *.pdf)
-            mover_archivo "$file" "$PDFS/"
-            ((pdfs++))
+        pdf)
+            mover_archivo_a_directorio "$ruta_archivo_actual" "$ruta_carpeta_pdfs/"
+            ((contador_pdfs_movidos++))
             ;;
     esac
+
 done
 
 
-archivos_vacios=$(find . -type f -empty)
-carpetas_vacias=$(find . -type d -empty ! -path "./$ORDENADO/*")
+mapfile -t lista_archivos_vacios_restantes < <(find . -type f -empty ! -path "./$nombre_carpeta_principal/*")
+mapfile -t lista_carpetas_vacias_restantes < <(find . -type d -empty ! -path "./$nombre_carpeta_principal")
 
-total_vacios=$(echo "$archivos_vacios $carpetas_vacias" | wc -w)
+total_elementos_vacios_restantes=$(( ${#lista_archivos_vacios_restantes[@]} + ${#lista_carpetas_vacias_restantes[@]} ))
+
+# -------------- INFORME FINAL --------------
 
 echo ""
 echo "INFORME FINAL"
-echo "--------------------------------"
-echo "Imágenes movidas: $imgs"
-echo "Documentos movidos: $docs"
-echo "TXT movidos: $txts"
-echo "PDFs movidos: $pdfs"
-echo "Elementos vacíos encontrados: $total_vacios"
-
-if [ "$total_vacios" -gt 0 ]; then
-    echo ""
-    echo "Elementos vacíos detectados:"
-    echo "$archivos_vacios"
-    echo "$carpetas_vacias"
-
-    read -p "¿Deseas eliminarlos? (s/n): " respuesta
-
-    if [[ "$respuesta" =~ ^[sS]$ ]]; then
-        find . -type f -empty -delete
-        find . -type d -empty -delete
-        echo "Elementos vacíos eliminados."
-    else
-        echo "No se eliminaron elementos."
-    fi
-fi
+echo "--------------------------------------------"
+echo "Imágenes movidas: $contador_imagenes_movidas"
+echo "Documentos movidos: $contador_documentos_movidos"
+echo "TXT movidos: $contador_textos_movidos"
+echo "PDFs movidos: $contador_pdfs_movidos"
+echo "Archivos vacíos movidos: $contador_archivos_vacios_movidos"
+echo "Elementos vacíos restantes detectados: $total_elementos_vacios_restantes"
 
 echo ""
-echo "Limpieza completada. Todo organizado en '$ORDENADO/'."
+echo "Proceso completado. Todo organizado en '$nombre_carpeta_principal/'."
