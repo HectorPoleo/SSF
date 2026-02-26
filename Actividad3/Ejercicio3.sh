@@ -5,24 +5,21 @@ if [ $# -ne 2 ]; then
 	exit 1
 fi
 
-altura_cm=$1
+altura=$1
 peso=$2
 
-altura_m=$(echo "scale=2; $altura_cm / 100" | bc)
+imc=$(($peso*10000/($altura*$altura)))
+echo "IMC: $imc"
 
-imc=$(echo "scale=2; $peso / ($altura_m * $altura_m)" | bc)
-
-echo "IMC = $imc"
-
-if(( $(echo "$imc < 18.5" | bc -1) ));
+if [ $imc -lt 18 ]
 then
-	echo "Bajo peso"
-elif (( $(echo "$imc < 25" | bc -1) ));
+	echo "Bajo peso, hay que comer mas"
+elif [ $imc -lt 25 ]
 then
-	echo "Peso saludable"
-elif (( $(echo "$imc < 30" | bc -1) ));
+	echo "Saludable"
+elif [ $imc -lt 30 ]
 then
-	echo "Pasado del peso estandar"
+	echo "Por encima de la media recomendable"
 else
-	echo "Obesidad"
+	echo "Sobrepeso"
 fi
