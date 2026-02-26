@@ -1,7 +1,7 @@
 En el mismo repositorio donde ha estado trabajando para la actividad de SSF 
 cree una carpeta nueva de Actividad 3 y trabaje en los siguientes ejercicios.
 
-1. Un script qué calcule el número de segundos totales y recibe por parámetros DIA, HORAS y SEGUNDOS.  Ejemplo:  ./segundos.sh 4 2 200 à Debería calcular los segundos que hay en 4 días 2h y 200s.
+1. Un script qué calcule el número de segundos totales y recibe por parámetros DIA, HORAS y SEGUNDOS.  Ejemplo:  ./segundos.sh 4 2 200 , Debería calcular los segundos que hay en 4 días 2h y 200s.
  
 2. Un script qué haga automáticamente: git add, git commit y git push. Con el mensaje que le pases. Ejemplo:  ./commit.sh mensaje de commit
 
