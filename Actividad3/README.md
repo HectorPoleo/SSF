@@ -11,11 +11,15 @@ cree una carpeta nueva de Actividad 3 y trabaje en los siguientes ejercicios.
  
 5. Haga un script que muestre en pantalla un menú similar al siguiente y ejecute el comando correcto para ver lo que pide el usuario:
  
-1. Espacio libre en disco (%)
-2. Espacio libre (tamaño)
-3. Usuario actual y nombre de la máquina
-4. Números de usuarios en la máquina (/etc/passwd)
-6. Espacio usado en tu carpeta
+1- Espacio libre en disco (%)
+
+2- Espacio libre (tamaño)
+
+3- Usuario actual y nombre de la máquina
+
+4- Números de usuarios en la máquina (/etc/passwd)
+
+6- Espacio usado en tu carpeta
  
 Elija una opción:
  
@@ -28,3 +32,4 @@ Elija una opción:
 ####################
 
 7. Haga un script similar al anterior, pero para un triángulo.
+
